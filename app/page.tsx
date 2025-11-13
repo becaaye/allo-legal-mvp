@@ -23,25 +23,27 @@ const LEGAL_DOMAINS = [
 export default function ChatInterface() {
   const [selectedDomain, setSelectedDomain] = useState("procedure")
   const [currentConversationId, setCurrentConversationId] = useState<string>("current")
+  const [input, setInput] = useState("")
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
 
-  const { messages, input, handleInputChange, append, isLoading, stop } = useChat({
-    api: "/api/chat",
-    initialMessages: [
-      {
-        id: "1",
-        role: "assistant",
-        content: `Bonjour ! Je suis votre mentor intelligent juridique. Je peux vous aider à trouver des réponses à vos questions juridiques en me basant sur notre base de connaissances élaborée par des avocats seniors expérimentés et des documents juridiques internes et externes pertinents.
-
-N'hésitez pas à utiliser l'enregistrement vocal pour que je puisse mieux comprendre votre situation.`,
-      },
-    ],
+  const { messages, sendMessage, status } = useChat({
     onFinish: () => {
       // Focus textarea après réponse
       textareaRef.current?.focus()
     }
   })
+
+  const isLoading = status === "streaming" || status === "submitted"
+  
+  // Message initial de bienvenue
+  const initialMessage = {
+    id: "initial",
+    role: "assistant" as const,
+    content: `Bonjour ! Je suis votre mentor intelligent juridique. Je peux vous aider à trouver des réponses à vos questions juridiques en me basant sur notre base de connaissances élaborée par des avocats seniors expérimentés et des documents juridiques internes et externes pertinents.
+
+N'hésitez pas à utiliser l'enregistrement vocal pour que je puisse mieux comprendre votre situation.`,
+  }
 
   // Auto-scroll vers le dernier message
   useEffect(() => {
@@ -54,13 +56,12 @@ N'hésitez pas à utiliser l'enregistrement vocal pour que je puisse mieux compr
 
   const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
-    if (!input.trim()) return
+    // Vérification de sécurité pour input
+    if (!input?.trim()) return
     
-    // Envoyer le message avec append (AI SDK v5)
-    await append({
-      role: "user",
-      content: input,
-    })
+    // Envoyer le message avec sendMessage (AI SDK v5)
+    await sendMessage({ text: input })
+    setInput("") // Réinitialiser l'input après envoi
     
     // Focus textarea après envoi
     setTimeout(() => textareaRef.current?.focus(), 100)
@@ -164,9 +165,29 @@ N'hésitez pas à utiliser l'enregistrement vocal pour que je puisse mieux compr
         {/* Messages Area */}
         <ScrollArea className="flex-1 p-6 bg-[#F9FAFB]">
           <div className="max-w-4xl mx-auto space-y-6">
-            {messages.map((message) => (
-              <ChatMessage key={message.id} message={message} />
-            ))}
+            {/* Message initial de bienvenue */}
+            {messages.length === 0 && (
+              <ChatMessage key={initialMessage.id} message={initialMessage} />
+            )}
+            
+            {messages.map((message) => {
+              // Convertir UIMessage (avec parts) en Message (avec content) pour ChatMessage
+              const content = message.parts
+                .filter((part) => part.type === "text")
+                .map((part) => (part as { type: "text"; text: string }).text)
+                .join("")
+              
+              return (
+                <ChatMessage
+                  key={message.id}
+                  message={{
+                    id: message.id,
+                    role: message.role,
+                    content: content || "",
+                  }}
+                />
+              )
+            })}
 
             {isLoading && (
               <div className="flex items-start gap-3">
@@ -203,39 +224,32 @@ N'hésitez pas à utiliser l'enregistrement vocal pour que je puisse mieux compr
                   <Textarea
                     ref={textareaRef}
                     value={input}
-                    onChange={handleInputChange}
+                    onChange={(e) => setInput(e.target.value)}
                     placeholder="Posez votre question juridique ou utilisez le micro..."
                     className="flex-1 bg-transparent border-0 resize-none focus-visible:ring-0 focus-visible:ring-offset-0 text-gray-900 placeholder:text-gray-400 min-h-[40px] max-h-[120px]"
                     rows={1}
                     onKeyDown={(e) => {
                       if (e.key === "Enter" && !e.shiftKey) {
                         e.preventDefault()
-                        onSubmit(e as any)
+                        // Vérification de sécurité avant d'envoyer
+                        if (input?.trim()) {
+                          sendMessage({ text: input })
+                          setInput("")
+                        }
                       }
                     }}
                   />
                 </div>
               </div>
 
-              {isLoading ? (
-                <Button
-                  type="button"
-                  onClick={stop}
-                  size="icon"
-                  className="shrink-0 bg-red-600 hover:bg-red-700 text-white h-[56px] w-[56px]"
-                >
-                  <span className="text-xs">Arrêter</span>
-                </Button>
-              ) : (
-                <Button
-                  type="submit"
-                  size="icon"
-                  disabled={!input || !input.trim()}
-                  className="shrink-0 bg-[#2DD4BF] hover:bg-[#26bfab] text-[#0A3D3D] disabled:bg-gray-200 disabled:text-gray-400 h-[56px] w-[56px] transition-transform active:scale-95"
-                >
-                  <Send className="w-5 h-5" />
-                </Button>
-              )}
+              <Button
+                type="submit"
+                size="icon"
+                disabled={!input?.trim() || isLoading}
+                className="shrink-0 bg-[#2DD4BF] hover:bg-[#26bfab] text-[#0A3D3D] disabled:bg-gray-200 disabled:text-gray-400 h-[56px] w-[56px] transition-transform active:scale-95"
+              >
+                <Send className="w-5 h-5" />
+              </Button>
             </div>
           </form>
         </div>

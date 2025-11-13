@@ -1,5 +1,5 @@
 import { createAnthropic } from '@ai-sdk/anthropic';
-import { streamText } from 'ai';
+import { streamText, UIMessage, convertToModelMessages } from 'ai';
 
 // Initialiser le client Anthropic
 const anthropic = createAnthropic({
@@ -25,9 +25,12 @@ const LEGAL_MENTOR_SYSTEM_PROMPT = `Tu es un mentor juridique expert québécois
 ## CONTEXTE
 Tu assistes un avocat junior qui a besoin de réponses rapides et fiables sur des questions de procédure civile au Québec.`;
 
+// Allow streaming responses up to 30 seconds
+export const maxDuration = 30;
+
 export async function POST(req: Request) {
   try {
-    const { messages } = await req.json();
+    const { messages }: { messages: UIMessage[] } = await req.json();
 
     // Validation
     if (!messages || !Array.isArray(messages)) {
@@ -40,17 +43,16 @@ export async function POST(req: Request) {
       return new Response('Configuration serveur incomplète', { status: 500 });
     }
 
-    // Appeler Claude avec streaming
+    // Appeler Claude avec streaming (AI SDK v5)
     const result = streamText({
       model: anthropic('claude-sonnet-4-20250514'),
       system: LEGAL_MENTOR_SYSTEM_PROMPT,
-      messages,
+      messages: convertToModelMessages(messages),
       temperature: 0.3, // Déterministe pour juridique
-      maxTokens: 2000,
     });
 
-    // Retourner le stream
-    return result.toDataStreamResponse();
+    // Retourner le stream au format UIMessage (compatible avec useChat)
+    return result.toUIMessageStreamResponse();
   } catch (error) {
     console.error('Erreur API Chat:', error);
     return new Response('Erreur lors de la génération de la réponse', { 
