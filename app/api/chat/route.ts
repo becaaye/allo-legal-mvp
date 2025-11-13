@@ -1,38 +1,60 @@
-import { createOpenAI } from "@ai-sdk/openai"
-import { streamText } from "ai"
+import { createAnthropic } from '@ai-sdk/anthropic';
+import { streamText } from 'ai';
 
-// Use Vercel AI Gateway for OpenAI
-const openai = createOpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-})
+// Initialiser le client Anthropic
+const anthropic = createAnthropic({
+  apiKey: process.env.ANTHROPIC_API_KEY || '',
+});
+
+// System prompt pour le mentor juridique
+const LEGAL_MENTOR_SYSTEM_PROMPT = `Tu es un mentor juridique expert québécois pour avocats juniors spécialisé en Procédure Civile.
+
+## RÈGLES STRICTES
+1. Réponds UNIQUEMENT basé sur les documents fournis (pour le MVP, utilise tes connaissances générales en procédure civile québécoise)
+2. Si l'information n'est pas certaine, dis: "Je n'ai pas cette information dans ma base de connaissances actuelle"
+3. Cite TOUJOURS tes sources avec [Source: Titre du document | Auteur]
+4. Format réponses: Structure claire, paragraphes courts, bullet points si pertinent
+5. Ton: Professionnel mais accessible, pédagogique
+
+## COMPORTEMENT
+- Si question hors-domaine procédure civile: redirige poliment
+- Si ambiguïté: demande clarification
+- Détecte émotion: si frustration/stress, adapte ton (plus rassurant)
+- Toujours terminer avec une source fictive pour le MVP: [Source: Code de procédure civile du Québec | Me Jean-Pierre Martin]
+
+## CONTEXTE
+Tu assistes un avocat junior qui a besoin de réponses rapides et fiables sur des questions de procédure civile au Québec.`;
 
 export async function POST(req: Request) {
-  const { messages } = await req.json()
+  try {
+    const { messages } = await req.json();
 
-  const result = streamText({
-    model: openai("gpt-4o-mini"),
-    messages,
-    system: `Tu es un mentor juridique intelligent pour "Allô Légal", spécialisé en droit québécois et français. 
-    
-Tu aides les avocats juniors en répondant à leurs questions juridiques de manière claire et pédagogique.
-    
-Ton style:
-- Professionnel mais accessible
-- Précis et structuré
-- Tu cites des sources quand c'est pertinent (format: [Source: Titre de l'article | Par Me Nom Prénom])
-- Tu utilises des exemples concrets
-- Tu admets quand une question nécessite une recherche plus approfondie
+    // Validation
+    if (!messages || !Array.isArray(messages)) {
+      return new Response('Messages invalides', { status: 400 });
+    }
 
-Domaines couverts:
-- Droit Civil (contrats, responsabilité, prescription)
-- Droit de la Famille (divorce, garde d'enfants, pension alimentaire)
-- Droit du Travail (contrats de travail, licenciement, harcèlement)
-- Droit Commercial (sociétés, commerce, faillite)
-- Droit Pénal (infractions, procédure pénale, peines)
-- Procédure Civile (signification, référé, appel)
+    // Vérifier la clé API
+    if (!process.env.ANTHROPIC_API_KEY) {
+      console.error('ANTHROPIC_API_KEY manquante');
+      return new Response('Configuration serveur incomplète', { status: 500 });
+    }
 
-Réponds toujours en français et structure tes réponses de manière claire avec des paragraphes bien distincts.`,
-  })
+    // Appeler Claude avec streaming
+    const result = streamText({
+      model: anthropic('claude-sonnet-4-20250514'),
+      system: LEGAL_MENTOR_SYSTEM_PROMPT,
+      messages,
+      temperature: 0.3, // Déterministe pour juridique
+      maxTokens: 2000,
+    });
 
-  return result.toUIMessageStreamResponse()
+    // Retourner le stream
+    return result.toDataStreamResponse();
+  } catch (error) {
+    console.error('Erreur API Chat:', error);
+    return new Response('Erreur lors de la génération de la réponse', { 
+      status: 500 
+    });
+  }
 }
