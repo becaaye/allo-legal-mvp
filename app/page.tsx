@@ -26,7 +26,7 @@ export default function ChatInterface() {
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
 
-  const { messages, input, handleInputChange, handleSubmit, isLoading, stop } = useChat({
+  const { messages, input, handleInputChange, append, isLoading, stop } = useChat({
     api: "/api/chat",
     initialMessages: [
       {
@@ -52,9 +52,16 @@ N'hésitez pas à utiliser l'enregistrement vocal pour que je puisse mieux compr
     window.location.reload()
   }
 
-  const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
-    handleSubmit(e)
+    if (!input.trim()) return
+    
+    // Envoyer le message avec append (AI SDK v5)
+    await append({
+      role: "user",
+      content: input,
+    })
+    
     // Focus textarea après envoi
     setTimeout(() => textareaRef.current?.focus(), 100)
   }
