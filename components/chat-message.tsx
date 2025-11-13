@@ -41,13 +41,13 @@ export function ChatMessage({ message }: ChatMessageProps) {
     return (
       <div className="flex items-start gap-3 justify-end animate-in fade-in duration-200">
         <div className="flex-1 flex flex-col items-end">
-          <div className="bg-[#0A3D3D] text-white rounded-2xl rounded-tr-sm p-4 max-w-[80%] shadow-sm">
+          <div className="bg-[#1E293B] text-white rounded-2xl rounded-tr-sm p-4 max-w-[80%] shadow-sm">
             <p className="text-[15px] leading-relaxed whitespace-pre-wrap">{message.content}</p>
           </div>
           <span className="text-xs text-gray-500 mt-1">{timestamp}</span>
         </div>
-        <div className="w-8 h-8 rounded-full bg-[#FCD34D]/20 flex items-center justify-center shrink-0">
-          <User className="w-4 h-4 text-[#FCD34D]" />
+        <div className="w-8 h-8 rounded-full bg-[#FCD34D] flex items-center justify-center shrink-0">
+          <User className="w-4 h-4 text-[#0A3D3D]" />
         </div>
       </div>
     )
@@ -55,12 +55,12 @@ export function ChatMessage({ message }: ChatMessageProps) {
 
   return (
     <div className="flex items-start gap-3 animate-in fade-in duration-200">
-      <div className="w-8 h-8 rounded-full bg-[#2DD4BF]/20 flex items-center justify-center shrink-0">
-        <Scale className="w-4 h-4 text-[#2DD4BF]" />
+      <div className="w-8 h-8 rounded-full bg-[#2DD4BF] flex items-center justify-center shrink-0">
+        <Scale className="w-4 h-4 text-[#0A3D3D]" />
       </div>
       <div className="flex-1 flex flex-col">
-        <div className="bg-white border border-gray-200 rounded-2xl rounded-tl-sm p-4 max-w-[80%] shadow-sm">
-          <p className="text-[15px] leading-relaxed whitespace-pre-wrap text-gray-900">{cleanContent}</p>
+        <div className="bg-[#0A3D3D] text-white rounded-2xl rounded-tl-sm p-4 max-w-[80%] shadow-sm">
+          <p className="text-[15px] leading-relaxed whitespace-pre-wrap">{cleanContent}</p>
         </div>
 
         {/* Sources Section */}
@@ -78,7 +78,7 @@ export function ChatMessage({ message }: ChatMessageProps) {
                       <div className="flex-1">
                         <p className="text-sm font-medium text-gray-900 mb-1">{source.title}</p>
                         <div className="flex items-center gap-2">
-                          <Badge className="bg-[#0A3D3D] text-white hover:bg-[#0A3D3D]/90">Procédure Civile</Badge>
+                          <Badge className="bg-[#2DD4BF] text-[#0A3D3D] hover:bg-[#2DD4BF]/90">Procédure Civile</Badge>
                           <span className="text-xs text-gray-700">Par {source.author}</span>
                         </div>
                       </div>
