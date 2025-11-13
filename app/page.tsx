@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useRef, useEffect } from "react"
 import { useChat } from "@ai-sdk/react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -22,7 +22,9 @@ const LEGAL_DOMAINS = [
 
 export default function ChatInterface() {
   const [selectedDomain, setSelectedDomain] = useState("procedure")
-  const [currentConversationId, setCurrentConversationId] = useState<string | null>(null)
+  const [currentConversationId, setCurrentConversationId] = useState<string>("current")
+  const messagesEndRef = useRef<HTMLDivElement>(null)
+  const textareaRef = useRef<HTMLTextAreaElement>(null)
 
   const { messages, input, handleInputChange, handleSubmit, isLoading, stop } = useChat({
     api: "/api/chat",
@@ -35,14 +37,30 @@ export default function ChatInterface() {
 N'hésitez pas à utiliser l'enregistrement vocal pour que je puisse mieux comprendre votre situation.`,
       },
     ],
+    onFinish: () => {
+      // Focus textarea après réponse
+      textareaRef.current?.focus()
+    }
   })
+
+  // Auto-scroll vers le dernier message
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
+  }, [messages])
 
   const handleNewConversation = () => {
     window.location.reload()
   }
 
+  const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+    handleSubmit(e)
+    // Focus textarea après envoi
+    setTimeout(() => textareaRef.current?.focus(), 100)
+  }
+
   return (
-    <div className="flex h-screen bg-gray-50 text-gray-900">
+    <div className="flex h-screen bg-[#F9FAFB] text-gray-900">
       {/* Sidebar */}
       <aside className="w-[280px] bg-[#0A3D3D] flex flex-col">
         {/* Sidebar Header */}
@@ -90,6 +108,7 @@ N'hésitez pas à utiliser l'enregistrement vocal pour que je puisse mieux compr
               <Scale className="w-5 h-5 text-[#2DD4BF]" />
               <h2 className="text-lg font-semibold text-gray-900">Allô Légal</h2>
             </div>
+            <span className="text-sm text-gray-500">Mentorat juridique à portée de main</span>
           </div>
 
           {/* Domain Selection */}
@@ -136,7 +155,7 @@ N'hésitez pas à utiliser l'enregistrement vocal pour que je puisse mieux compr
         </header>
 
         {/* Messages Area */}
-        <ScrollArea className="flex-1 p-6 bg-gray-50">
+        <ScrollArea className="flex-1 p-6 bg-[#F9FAFB]">
           <div className="max-w-4xl mx-auto space-y-6">
             {messages.map((message) => (
               <ChatMessage key={message.id} message={message} />
@@ -144,13 +163,13 @@ N'hésitez pas à utiliser l'enregistrement vocal pour que je puisse mieux compr
 
             {isLoading && (
               <div className="flex items-start gap-3">
-                <div className="w-8 h-8 rounded-full bg-[#2DD4BF]/20 flex items-center justify-center shrink-0">
-                  <Scale className="w-4 h-4 text-[#2DD4BF]" />
+                <div className="w-8 h-8 rounded-full bg-[#2DD4BF] flex items-center justify-center shrink-0">
+                  <Scale className="w-4 h-4 text-[#0A3D3D]" />
                 </div>
                 <div className="flex-1">
-                  <div className="bg-white border border-gray-200 rounded-2xl rounded-tl-sm p-4 max-w-[80%] shadow-sm">
+                  <div className="bg-[#0A3D3D] text-white rounded-2xl rounded-tl-sm p-4 max-w-[80%] shadow-sm">
                     <div className="flex items-center gap-2">
-                      <span className="text-sm text-gray-600">En train de réfléchir</span>
+                      <span className="text-sm">En train de réfléchir</span>
                       <div className="flex gap-1">
                         <span className="w-1.5 h-1.5 bg-[#2DD4BF] rounded-full animate-bounce [animation-delay:-0.3s]" />
                         <span className="w-1.5 h-1.5 bg-[#2DD4BF] rounded-full animate-bounce [animation-delay:-0.15s]" />
@@ -161,17 +180,21 @@ N'hésitez pas à utiliser l'enregistrement vocal pour que je puisse mieux compr
                 </div>
               </div>
             )}
+            
+            {/* Scroll anchor */}
+            <div ref={messagesEndRef} />
           </div>
         </ScrollArea>
 
         {/* Input Area */}
         <div className="border-t border-gray-200 p-4 bg-white">
-          <form onSubmit={handleSubmit} className="max-w-4xl mx-auto">
+          <form onSubmit={onSubmit} className="max-w-4xl mx-auto">
             <div className="flex items-end gap-3">
               <div className="flex-1 relative">
                 <div className="flex items-center gap-2 bg-white rounded-lg px-4 py-2 border border-gray-300 focus-within:border-[#2DD4BF] transition-colors shadow-sm">
                   <Mic className="w-5 h-5 text-gray-400 shrink-0" />
                   <Textarea
+                    ref={textareaRef}
                     value={input}
                     onChange={handleInputChange}
                     placeholder="Posez votre question juridique ou utilisez le micro..."
@@ -180,7 +203,7 @@ N'hésitez pas à utiliser l'enregistrement vocal pour que je puisse mieux compr
                     onKeyDown={(e) => {
                       if (e.key === "Enter" && !e.shiftKey) {
                         e.preventDefault()
-                        handleSubmit(e as any)
+                        onSubmit(e as any)
                       }
                     }}
                   />
@@ -201,7 +224,7 @@ N'hésitez pas à utiliser l'enregistrement vocal pour que je puisse mieux compr
                   type="submit"
                   size="icon"
                   disabled={!input || !input.trim()}
-                  className="shrink-0 bg-[#2DD4BF] hover:bg-[#26bfab] text-[#0A3D3D] disabled:bg-gray-200 disabled:text-gray-400 h-[56px] w-[56px]"
+                  className="shrink-0 bg-[#2DD4BF] hover:bg-[#26bfab] text-[#0A3D3D] disabled:bg-gray-200 disabled:text-gray-400 h-[56px] w-[56px] transition-transform active:scale-95"
                 >
                   <Send className="w-5 h-5" />
                 </Button>
