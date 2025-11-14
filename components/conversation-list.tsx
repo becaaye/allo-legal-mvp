@@ -26,11 +26,11 @@ export function ConversationList({ currentConversationId, onSelectConversation }
           className={cn(
             "w-full text-left p-3 rounded-lg transition-colors",
             "hover:bg-white/5",
-            currentConversationId === currentConversation.id && "bg-[#0A3D3D]/20"
+            currentConversationId === currentConversation.id && "bg-primary/20"
           )}
         >
           <div className="flex items-start gap-2">
-            <FileText className="w-4 h-4 text-[#2DD4BF] mt-0.5 shrink-0" />
+            <FileText className="w-4 h-4 text-secondary mt-0.5 shrink-0" />
             <div className="flex-1 min-w-0">
               <h3 className="text-sm font-medium text-white truncate">
                 {currentConversation.title}

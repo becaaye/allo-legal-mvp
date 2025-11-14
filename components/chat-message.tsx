@@ -41,13 +41,13 @@ export function ChatMessage({ message }: ChatMessageProps) {
     return (
       <div className="flex items-start gap-3 justify-end animate-in fade-in duration-200">
         <div className="flex-1 flex flex-col items-end">
-          <div className="bg-[#1E293B] text-white rounded-2xl rounded-tr-sm p-4 max-w-[80%] shadow-sm">
+          <div className="bg-primary text-white rounded-2xl rounded-tr-sm p-4 max-w-[80%] shadow-sm">
             <p className="text-[15px] leading-relaxed whitespace-pre-wrap">{message.content}</p>
           </div>
           <span className="text-xs text-gray-500 mt-1">{timestamp}</span>
         </div>
-        <div className="w-8 h-8 rounded-full bg-[#FCD34D] flex items-center justify-center shrink-0">
-          <User className="w-4 h-4 text-[#0A3D3D]" />
+        <div className="w-8 h-8 rounded-full bg-tertiary flex items-center justify-center shrink-0">
+          <User className="w-4 h-4 text-primary" />
         </div>
       </div>
     )
@@ -55,11 +55,11 @@ export function ChatMessage({ message }: ChatMessageProps) {
 
   return (
     <div className="flex items-start gap-3 animate-in fade-in duration-200">
-      <div className="w-8 h-8 rounded-full bg-[#2DD4BF] flex items-center justify-center shrink-0">
-        <Scale className="w-4 h-4 text-[#0A3D3D]" />
+      <div className="w-8 h-8 rounded-full bg-secondary flex items-center justify-center shrink-0">
+        <Scale className="w-4 h-4 text-primary" />
       </div>
       <div className="flex-1 flex flex-col">
-        <div className="bg-[#0A3D3D] text-white rounded-2xl rounded-tl-sm p-4 max-w-[80%] shadow-sm">
+        <div className="bg-white text-gray-900 rounded-2xl rounded-tl-sm p-4 max-w-[80%] shadow-sm border border-gray-200">
           <p className="text-[15px] leading-relaxed whitespace-pre-wrap">{cleanContent}</p>
         </div>
 
@@ -73,12 +73,12 @@ export function ChatMessage({ message }: ChatMessageProps) {
               </CollapsibleTrigger>
               <CollapsibleContent className="mt-2 space-y-2">
                 {sources.map((source, index) => (
-                  <div key={index} className="bg-[#FEF3C7] rounded-lg p-3 border border-[#FCD34D]/20 shadow-sm">
+                  <div key={index} className="bg-tertiary/20 rounded-lg p-3 border border-tertiary/20 shadow-sm">
                     <div className="flex items-start gap-2">
                       <div className="flex-1">
                         <p className="text-sm font-medium text-gray-900 mb-1">{source.title}</p>
                         <div className="flex items-center gap-2">
-                          <Badge className="bg-[#2DD4BF] text-[#0A3D3D] hover:bg-[#2DD4BF]/90">Procédure Civile</Badge>
+                          <Badge className="bg-secondary text-primary hover:bg-secondary/90">Procédure Civile</Badge>
                           <span className="text-xs text-gray-700">Par {source.author}</span>
                         </div>
                       </div>

@@ -10,10 +10,13 @@
   --card-foreground: oklch(0.145 0 0);
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
+  /* Couleurs personnalisées Allô Légal */
+  --primary: #0A3D3D; /* Vert foncé - sidebar et bulles user */
   --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
+  --secondary: #35ca97; /* Vert menthe - boutons, badges (couleur du logo) */
+  --secondary-foreground: #0A3D3D;
+  --tertiary: #FCD34D; /* Jaune - avatars user et cartes de sources */
+  --tertiary-foreground: #0A3D3D;
   --muted: oklch(0.97 0 0);
   --muted-foreground: oklch(0.556 0 0);
   --accent: oklch(0.97 0 0);
@@ -87,6 +90,8 @@
   --color-primary-foreground: var(--primary-foreground);
   --color-secondary: var(--secondary);
   --color-secondary-foreground: var(--secondary-foreground);
+  --color-tertiary: var(--tertiary);
+  --color-tertiary-foreground: var(--tertiary-foreground);
   --color-muted: var(--muted);
   --color-muted-foreground: var(--muted-foreground);
   --color-accent: var(--accent);
@@ -130,15 +135,15 @@
   }
 
   ::-webkit-scrollbar-track {
-    background: #0a3d3d;
+    background: var(--primary);
   }
 
   ::-webkit-scrollbar-thumb {
-    background: #2dd4bf;
+    background: var(--secondary);
     border-radius: 4px;
   }
 
   ::-webkit-scrollbar-thumb:hover {
-    background: #26bfab;
+    background: color-mix(in srgb, var(--secondary) 90%, black);
   }
 }
